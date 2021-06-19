@@ -32,7 +32,12 @@ cp config.py.example config.py
 ```
 然后按照其中提示编辑`config.py`
 
-之后直接运行
+之后直接运行对整个`CONFIG["source_dir"]`下的mkv文件生成上传信息
 ```
 python3 run_all.py
+```
+
+或者运行
+```
+python3 run_one.py --mkvpath mkv文件的路径 --resultdir 生成的结果文件夹的目录 [--is_single_file]
 ```
