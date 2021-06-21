@@ -3,7 +3,7 @@ CONFIG = {
     "source_dir" : "/mnt/f/utdownload/films",
     # uploady生成信息所存的文件夹
     "uploady_dir" : "/mnt/f/gpw/uploady",
-    # 所有uploady可以做的操作，如果你不需要uploady帮你做，就把对应条目改为True/False
+    # 所有uploady可以做的操作，如果你需要/不需要uploady帮你做，就把对应条目改为True/False
     "pipeline" : {
         "screenshot" : {
             # 不需要截图功能将此项改为False
@@ -13,6 +13,9 @@ CONFIG = {
             # 将截出来的图自动上传到gpw图床，如果需要此功能则必填后面的gpw的cookies
             # 结果会以bbcode的形式存在screenshot_bbcode.txt里
             "upload_to_image_host" : True,
+            # 将截出来的图自动上传到ptpimg图床，如果需要此功能则必填后面的ptpimg的api_key
+            # 结果会以bbcode的形式存在screenshot_bbcode_ptpimg.txt里
+            "upload_to_ptpimg" : False,
         },
         # 生成mediainfo，结果会存在mediainfo.txt里
         "mediainfo" : True,
@@ -31,4 +34,8 @@ CONFIG = {
             "PHPSESSID": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",    
         }, 
     },
+    # 如果上面的upload_to_ptpimg为True，则api_key必填，否则可忽略
+    "ptpimg" : {
+        "api_key" : "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    }
 }

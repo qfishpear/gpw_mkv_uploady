@@ -17,7 +17,8 @@ class UploadTask(object):
         mkvpath: str,
         resultdir: str,
         is_single_file: bool,
-        imguploader=None
+        imguploader=None,
+        ptpimguploader=None,
     ):
         """
         pipeline: all operations to be done, see config.py for details
@@ -30,6 +31,7 @@ class UploadTask(object):
         self.resultdir = resultdir        
         self.is_single_file = is_single_file
         self.imguploader = imguploader
+        self.ptpimguploader = ptpimguploader
 
     def run_all(self):
         filename = os.path.split(self.mkvpath)[1]
@@ -37,11 +39,13 @@ class UploadTask(object):
         if not os.path.exists(self.resultdir):
             os.makedirs(self.resultdir)
         if self.pipeline["screenshot"]["screenshot"]:
+            SCREENSHOT= self.pipeline["screenshot"]
             logging.info("generating screenshot")
-            self.gen_screenshot(
-                quantiles=self.pipeline["screenshot"]["quantiles"],
-                upload=self.pipeline["screenshot"]["upload_to_image_host"],
-            )
+            screenshot_paths = self.gen_screenshot(quantiles=SCREENSHOT["quantiles"])
+            if SCREENSHOT["upload_to_image_host"]:
+                self.upload_to_image_host(screenshot_paths)
+            if SCREENSHOT["upload_to_ptpimg"]:
+                self.upload_to_ptpimg(screenshot_paths)
         if self.pipeline["mediainfo"]:
             logging.info("generating mediainfo")
             self.gen_mediainfo()
@@ -52,28 +56,44 @@ class UploadTask(object):
             logging.info("generating mkv softlink")
             self.gen_mkv_softlink()
 
-    def gen_screenshot(self, quantiles, upload=False):
+    def gen_screenshot(self, quantiles):
         length_cmd = ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", self.mkvpath]
         length = float(subprocess.run(length_cmd, check=True, capture_output=True).stdout)    
         timestamps = [int(length * quantile) for quantile in quantiles]
         logging.info("video length: {}".format(time.strftime('%H:%M:%S', time.gmtime(length))))
-        screenshots = []
+        screenshot_paths = []
         for t in timestamps:
             target = os.path.join(self.resultdir, "{}.png".format(time.strftime('%H_%M_%S', time.gmtime(t))))
-            screenshots.append(target)
+            screenshot_paths.append(target)
             if not os.path.exists(target):
                 screenshot_cmd = ["ffmpeg", "-ss", str(t), "-y", "-i", self.mkvpath, "-vframes", "1", "-vcodec", "png", target]
-                subprocess.run(screenshot_cmd, check=True, capture_output=True)            
-        if upload:
-            uploaded_result = os.path.join(self.resultdir, "screenshot_bbcode.txt")
-            if not os.path.exists(uploaded_result):
-                uploaded_urls = []
-                for img_path in screenshots:
-                    logging.info("uploading {}".format(img_path))
-                    uploaded_urls.append(self.imguploader.upload(img_path))
-                with open(uploaded_result, "w") as f:
-                    for url in uploaded_urls:
-                        f.write("[img]{}[/img]\n".format(url))
+                subprocess.run(screenshot_cmd, check=True, capture_output=True)
+        return screenshot_paths
+
+    def upload_to_image_host(self, screenshot_paths):
+        """
+        上传至gpw官方图床
+        """
+        uploaded_result = os.path.join(self.resultdir, "screenshot_bbcode.txt")
+        if not os.path.exists(uploaded_result):
+            uploaded_urls = []
+            for img_path in screenshot_paths:
+                logging.info("uploading {}".format(img_path))
+                uploaded_urls.append(self.imguploader.upload(img_path))
+            with open(uploaded_result, "w") as f:
+                for url in uploaded_urls:
+                    f.write("[img]{}[/img]\n".format(url))
+
+    def upload_to_ptpimg(self, screenshot_paths):
+        uploaded_result = os.path.join(self.resultdir, "screenshot_bbcode_ptpimg.txt")
+        if not os.path.exists(uploaded_result):
+            uploaded_urls = []
+            for img_path in screenshot_paths:
+                logging.info("uploading {} to ptpimg".format(img_path))
+                uploaded_urls.append(self.ptpimguploader.upload_file(img_path)[0])
+            with open(uploaded_result, "w") as f:
+                for url in uploaded_urls:
+                    f.write("[img]{}[/img]\n".format(url))
 
     def gen_mediainfo(self):
         with open(os.path.join(self.resultdir, "mediainfo.txt"), "w") as f:

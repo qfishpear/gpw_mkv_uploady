@@ -5,7 +5,7 @@
 批量扫描电影文件夹内的mkv, 会自动过滤剧集和被禁止的发布组的内容
 
 * 截图
-* 将截图上传gpw图床
+* 将截图上传gpw图床或ptpimg
 * 生成mediainfo
 * 重新制种
 重新制种会仅保留主mkv文件忽略掉sample以及其他无关文件
@@ -18,7 +18,7 @@
 
 * 安装python3并安装requests
 ```
-sudo pip3 install requests
+sudo pip3 install requests ptpimg_uploader
 ```
 * mediainfo和ffmpeg，例子：对于ubuntu
 ```

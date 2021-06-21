@@ -46,6 +46,12 @@ if SCREENSHOT["screenshot"] and SCREENSHOT["upload_to_image_host"]:
     imguploader = img_uploader.ImgUploader(cookies=CONFIG["gpw"]["cookies"])
 else:
     imguploader = None
+if SCREENSHOT["screenshot"] and SCREENSHOT["upload_to_ptpimg"]:
+    import ptpimg_uploader 
+    ptpimguploader = ptpimg_uploader.PtpimgUploader(api_key=CONFIG["ptpimg"]["api_key"])
+else:
+    ptpimguploader = None
+
 for i, t in enumerate(tasks):
     logging.info("{}/{}: {}".format(i+1, len(tasks),  t["mkvpath"]))
     task = upload_task.UploadTask(
@@ -54,5 +60,6 @@ for i, t in enumerate(tasks):
         resultdir=t["resultdir"],
         is_single_file=t["is_single_file"],
         imguploader=imguploader,
+        ptpimguploader=ptpimguploader,
     )
     task.run_all()

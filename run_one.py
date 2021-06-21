@@ -17,11 +17,17 @@ if SCREENSHOT["screenshot"] and SCREENSHOT["upload_to_image_host"]:
     imguploader = img_uploader.ImgUploader(cookies=CONFIG["gpw"]["cookies"])
 else:
     imguploader = None
+if SCREENSHOT["screenshot"] and SCREENSHOT["upload_to_ptpimg"]:
+    import ptpimg_uploader 
+    ptpimguploader = ptpimg_uploader.PtpimgUploader(api_key=CONFIG["ptpimg"]["api_key"])
+else:
+    ptpimguploader = None
 task = upload_task.UploadTask(
     pipeline=CONFIG["pipeline"],
     mkvpath=args.mkvpath,
     resultdir=args.resultdir,
     is_single_file=args.is_single_file,
     imguploader=imguploader,
+    ptpimguploader=ptpimguploader,
 )
 task.run_all()
