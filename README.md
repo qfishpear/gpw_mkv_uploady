@@ -20,9 +20,9 @@
 ```
 sudo pip3 install requests ptpimg_uploader
 ```
-* mediainfo和ffmpeg，例子：对于ubuntu
+* mediainfo、ffmpeg和mktorrent，例子：对于ubuntu
 ```
-sudo apt-get install mediainfo ffmpeg
+sudo apt-get install mediainfo ffmpeg mktorrent
 ```
 
 ## 运行
