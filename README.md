@@ -18,7 +18,7 @@
 
 * 安装python3并安装requests
 ```
-sudo pip3 install requests ptpimg_uploader
+sudo pip3 install requests ptpimg_uploader brotli
 ```
 * mediainfo、ffmpeg和mktorrent，例子：对于ubuntu
 ```
