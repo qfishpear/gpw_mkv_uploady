@@ -3,6 +3,7 @@ import requests
 import logging
 import traceback
 import json
+import brotli
 
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
@@ -22,44 +23,39 @@ class Timer(object):
 
 class ImgUploader(object):
     HEADERS = {
-        "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        "accept-language": "zh-CN,zh;q=0.9",
-        "cache-control": "max-age=0",
+        "accept": "application/json, text/javascript, */*; q=0.01",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+        "cache-control": "no-cache",
         "referer": "https://greatposterwall.com/upload.php?action=image",
-        "sec-ch-ua": '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
+        "sec-ch-ua": '"Not_A Brand";v="8", "Chromium";v="120", "Microsoft Edge";v="120"',
         "sec-ch-ua-mobile": "?0",
-        "sec-fetch-dest": "document",
-        "sec-fetch-mode": "navigate",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
         "sec-fetch-site": "same-origin",
-        "sec-fetch-user": "?1",
-        "upgrade-insecure-requests": "1",
+        "accept-encoding": "gzip, deflate, br",
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36"
     }
     def __init__(self, cookies):
-        self.upload_url = "https://up-as0.qiniup.com"
+        #self.upload_url = "https://up-as0.qiniup.com"
+        self.upload_url = "https://greatposterwall.com/upload.php?action=imgupload"
         self.img_host_url = "https://img.kshare.club/"
         self.timer = Timer(1, 2)
         self.token_timer = Timer(5, 10)
         self.cookies = cookies
-
-        self.token = self.get_token()
+        #self.token = self.get_token()
 
     def _upload(self, img_path):
         self.timer.wait()
-        files = {
-            "file": ("1.png", open(img_path, "rb"), "image/png"),
-            "token": (None, self.token)
-        }
-        r = requests.post(self.upload_url, files=files)
+        files = {'images[]': open(img_path, "rb")}
+
+        r = requests.post(self.upload_url, headers=ImgUploader.HEADERS, cookies=self.cookies, files=files)
         return json.loads(r.text)
 
     def upload(self, img_path):
         resp = self._upload(img_path)
         if "error" in resp.keys():
-            if resp["error"] == "expired token":
-                self.token = self.get_token()
-                resp = self._upload(img_path)
-        uploaded_url = "{}{}".format(self.img_host_url, resp["key"])
+            print(resp["error"])
+        uploaded_url = "{}".format(resp["files"][0]["name"])
         logging.info("uploaded to: {}".format(uploaded_url))
         return uploaded_url
 
